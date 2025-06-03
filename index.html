@@ -6,10 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>限定词选取</title>
   <!-- 引入 Vue -->
-  <script src="libs\vue.min.js"></script>
+  <script src="libs/vue.min.js"></script>
   <!-- 引入 Element UI -->
-  <link rel="stylesheet" href="libs\theme-chalk\index.css">
-  <script src="libs\index.js"></script>
+  <link rel="stylesheet" href="libs/theme-chalk/index.css">
+  <script src="libs/index.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -75,11 +75,11 @@
     <el-checkbox v-model="wrapWithBrackets">是否使用‘[ ]’包裹限定词</el-checkbox>
     <div class="input-area">
       <h3>请输入文本内容：</h3>
-      <el-input type="textarea" placeholder="请输入内容" v-model="inputText"></el-input>
+      <!-- 添加 :disabled 属性，绑定到 isInputDisabled -->
+      <el-input type="textarea" placeholder="请输入内容" v-model="inputText" :disabled="isInputDisabled"></el-input>
       <el-button type="primary" @click="submitText" style="margin-top: 10px;">提交</el-button>
       <el-button type="info" @click="clearUpload" style="margin-top: 10px;">清空上传</el-button>
     </div>
-
 
     <h3>在以下文本框中使用鼠标划取限定词：</h3>
     <div class="output-area">
@@ -89,6 +89,8 @@
     </div>
     <div class="selected-text">
       <h3>限定词划取结果：</h3>
+      <p style="margin-top: 10px; font-weight: bolder; color:rgb(11, 163, 34);">已划取的限定词数量: {{ selectedCount }}</p>
+      <p style="margin-top: 10px; font-weight: bolder; color:rgb(11, 163, 34);">限定词与输入内容总长度: {{ totalLength }}</p>
       <el-input type="text" :value="formattedSelectedText" readonly placeholder="你划取的限定词将显示在这里"></el-input>
       <el-button type="danger" @click="undoSelection" style="margin-top: 10px;">撤销上一个划取</el-button>
       <el-button type="warning" @click="clearSelections" style="margin-top: 10px;">清空所有划取</el-button>
@@ -96,7 +98,7 @@
       <el-button v-if="wrapWithBrackets" type="primary" @click="copyFullContent" style="margin-top: 10px;">
         复制完整内容
       </el-button>
-      <p style="margin-top: 10px;">已划取的限定词数量: {{ selectedCount }}</p>
+
     </div>
   </div>
 
@@ -109,6 +111,8 @@
         selectedTexts: [],
         wrapWithBrackets: true,
         isContentSubmitted: false,
+        // 新增变量，用于控制输入框是否可编辑
+        isInputDisabled: false
       },
       computed: {
         formattedOutputText() {
@@ -128,6 +132,10 @@
         },
         selectedCount() {
           return this.selectedTexts.length;
+        },
+        // 计算输入内容与限定词划取结果的总长度
+        totalLength() {
+          return (this.formattedSelectedText ? this.formattedSelectedText.length : 0) + (this.inputText ? this.inputText.length : 0);
         }
       },
       methods: {
@@ -137,7 +145,7 @@
             return;
           }
           this.displayedText += (this.displayedText ? ' ' : '') + this.inputText;
-          this.inputText = '';
+          this.isInputDisabled = true;
           this.isContentSubmitted = true;
         },
         clearUpload() {
@@ -145,6 +153,7 @@
           this.displayedText = '';
           this.selectedTexts = [];
           this.isContentSubmitted = false;
+          this.isInputDisabled = false;
         },
         extractSelectedText() {
           const selection = window.getSelection();
